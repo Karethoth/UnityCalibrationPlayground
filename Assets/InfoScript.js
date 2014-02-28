@@ -1,14 +1,18 @@
 ﻿#pragma strict
 
 var inputNode:GameObject;
+var stickNode:GameObject;
 
 private var inp:CalibratedInputScript;
 private var calibrating:boolean = false;
+private var stickStartPos:Vector3;
 
 
 function Start()
 {
+	Screen.sleepTimeout = SleepTimeout.NeverSleep;
 	inp = inputNode.GetComponent( CalibratedInputScript );
+	stickStartPos = stickNode.transform.position;
 }
 
 
@@ -25,6 +29,11 @@ function Update()
 	// Fetch the input, calibrated or not.
 	var vals:Vector2 = inp.GetInput();
 
+	// Move the stick to corresponding position.
+	var stickPosition:Vector3 = stickStartPos;
+	stickPosition.x += vals.x;
+	stickPosition.y += vals.y;
+	stickNode.transform.position = stickPosition;
 
 	if( calibrating )
 	{
@@ -44,7 +53,7 @@ function Update()
 		}
 
 		// Print out some data during the calibration, like time and the current raw values.
-		this.guiText.text = "" + inp.GetCalibrationTime() + "\n" +
+		this.guiText.text = "" + (10 - inp.GetCalibrationTime()) + "\n" +
 		                    "X: " + vals.x + "\nY: " + vals.y;
 
 		return;

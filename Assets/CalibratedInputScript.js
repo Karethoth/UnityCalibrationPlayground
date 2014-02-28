@@ -48,8 +48,8 @@ private var ratiosX:Vector2 = Vector2( 1.0, 1.0 );
 private var ratiosY:Vector2 = Vector2( 1.0, 1.0 );
 
 // These are used to calculate the ratios
-private var maxValuesX:Vector2 = Vector2( 0.1, -0.1 );
-private var maxValuesY:Vector2 = Vector2( 0.1, -0.1 );
+private var maxValuesX:Vector2 = Vector2( 0.01, -0.01 );
+private var maxValuesY:Vector2 = Vector2( 0.01, -0.01 );
 
 // Holds values from Input.acceleration.
 //   This is just so that same values can be used
@@ -102,7 +102,6 @@ function Update()
 {
 	// Read the gyro+acceleration info for this update.
 	sensorInput = Input.acceleration;
-	sensorInput = zeroVector - sensorInput;
 
 	if( IsCalibrating() )
 	{
@@ -121,6 +120,11 @@ function StartCalibration()
 {
 	calibrating = true;
 	calibrationStartTime = Time.time;
+
+	maxValuesX = Vector2( 0.01, 0.01 );
+	maxValuesY = Vector2( 0.01, 0.01 );
+	ratiosX = Vector2( 1.0, 1.0 );
+	ratiosY = Vector2( 1.0, 1.0 );
 }
 
 
@@ -260,22 +264,24 @@ private function UpdateBuffers()
 
 private function CalculateNewValues()
 {
-	if( sensorInput.x > 0 )
+	var zeroedInput = sensorInput - zeroVector;
+
+	if( zeroedInput.x > 0 )
 	{
-		currentX = sensorInput.x * ratiosX.x;
+		currentX = zeroedInput.x * ratiosX.x;
 	}
 	else
 	{
-		currentX = sensorInput.x * ratiosX.y;
+		currentX = zeroedInput.x * ratiosX.y;
 	}
 
-	if( sensorInput.y > 0 )
+	if( zeroedInput.y > 0 )
 	{
-		currentY = sensorInput.y * ratiosY.x;
+		currentY = zeroedInput.y * ratiosY.x;
 	}
 	else
 	{
-		currentY = sensorInput.y * ratiosY.y;
+		currentY = zeroedInput.y * ratiosY.y;
 	}
 }
 
