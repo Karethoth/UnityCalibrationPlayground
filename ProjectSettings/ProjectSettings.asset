@@ -11,7 +11,7 @@ PlayerSettings:
   targetResolution: 0
   accelerometerFrequency: 60
   companyName: Funtek
-  productName: Test Project
+  productName: Calibration Playground
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   defaultScreenWidth: 1024
@@ -73,7 +73,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  iPhoneBundleIdentifier: com.funtek.testProject.target
+  iPhoneBundleIdentifier: com.funtek.calibrationPlayground
   metroEnableIndependentInputSource: 0
   metroEnableLowLatencyPresentationAPI: 0
   productGUID: c7ed4319abe09a4488e37faa1d2f70e9
