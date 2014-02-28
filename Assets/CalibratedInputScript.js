@@ -286,6 +286,9 @@ private function ChaoticCalibration()
 	{
 		maxValuesY.x = currentY;
 	}
-	else if( currentY < maxValuesY.y && currentY >= 0-maxValueLimits.y  )
+	else if( currentY < maxValuesY.y &&
+	         currentY >= 0-maxValueLimits.y  )
+	{
 		maxValuesY.y = currentY;
+	}
 }
