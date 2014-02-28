@@ -90,7 +90,7 @@ function Start()
 
 	// Set up the default values.
 	Initialize();
-	
+
 	// Now that we have at least some sort of default values,
 	// we can turn the calibrating flag off and let the developer
 	// set it up when the real calibrating takes place.
@@ -103,13 +103,13 @@ function Update()
 	// Read the gyro+acceleration info for this update.
 	sensorInput = Input.acceleration;
 	sensorInput = zeroVector - sensorInput;
-	
+
 	if( IsCalibrating() )
 	{
 		CalibrationStep();
 		++calibrationSampleCount;
 	}
-	
+
 	// Update
 	CalculateNewValues();
 }
@@ -131,10 +131,20 @@ function EndCalibration()
 	var ratioNegativeX = (0-referenceValues.x) / maxValuesX.y;
 	var ratioPositiveY = referenceValues.y     / maxValuesY.x;
 	var ratioNegativeY = (0-referenceValues.y) / maxValuesY.y;
-	
+
+	// We don't want zeros here.
+	if( ratioPositiveX == 0 )
+		ratioPositiveX == 0.01;
+	if( ratioNegativeX == 0 )
+		ratioNegativeX == 0.01;
+	if( ratioPositiveY == 0 )
+		ratioPositiveY == 0.01;
+	if( ratioNegativeY == 0 )
+		ratioNegativeY == 0.01;
+
 	ratiosX = Vector2( ratioPositiveX, ratioNegativeX );
 	ratiosY = Vector2( ratioPositiveY, ratioNegativeY );
-	
+
 	calibrating = false;
 	calibrationSampleCount = 0;
 	calibrationStartTime   = 0;
@@ -192,7 +202,7 @@ function GetCalibrationTime()
 {
 	if( !IsCalibrating() )
 		return 0.0;
-	
+
 	return Time.time - calibrationStartTime;
 }
 

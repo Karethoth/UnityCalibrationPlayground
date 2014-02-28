@@ -21,7 +21,7 @@ function Update()
 	{
 		Application.Quit();
 	}
-	
+
 	// Fetch the input, calibrated or not.
 	var vals:Vector2 = inp.GetInput();
 
@@ -34,7 +34,7 @@ function Update()
 			inp.StartCalibration();
 			return;
 		}
-		
+
 		// We'll limit the calibration now by time: 10 seconds.
 		if( inp.GetCalibrationTime() >= 10 )
 		{
@@ -42,7 +42,7 @@ function Update()
 			calibrating = false;
 			return;
 		}
-		
+
 		// Print out some data during the calibration, like time and the current raw values.
 		this.guiText.text = "" + inp.GetCalibrationTime() + "\n" +
 		                    "X: " + vals.x + "\nY: " + vals.y;
