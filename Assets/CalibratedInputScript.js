@@ -134,13 +134,13 @@ function EndCalibration()
 
 	// We don't want zeros here.
 	if( ratioPositiveX == 0 )
-		ratioPositiveX == 0.01;
+		ratioPositiveX = 0.01;
 	if( ratioNegativeX == 0 )
-		ratioNegativeX == 0.01;
+		ratioNegativeX = 0.01;
 	if( ratioPositiveY == 0 )
-		ratioPositiveY == 0.01;
+		ratioPositiveY = 0.01;
 	if( ratioNegativeY == 0 )
-		ratioNegativeY == 0.01;
+		ratioNegativeY = 0.01;
 
 	ratiosX = Vector2( ratioPositiveX, ratioNegativeX );
 	ratiosY = Vector2( ratioPositiveY, ratioNegativeY );
