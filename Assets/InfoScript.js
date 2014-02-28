@@ -3,7 +3,7 @@
 var inputNode:GameObject;
 
 private var inp:CalibratedInputScript;
-private var calibrated:boolean = false;
+private var calibrating:boolean = false;
 
 
 function Start()
@@ -26,8 +26,7 @@ function Update()
 	var vals:Vector2 = inp.GetInput();
 
 
-	// If we haven't yet calibrated, then we'll start the calibration
-	if( !calibrated )
+	if( calibrating )
 	{
 		// If the input node isn't yet calibrating, it's time to start
 		if( !inp.IsCalibrating() )
@@ -40,7 +39,7 @@ function Update()
 		if( inp.GetCalibrationTime() >= 10 )
 		{
 			inp.EndCalibration();
-			calibrated = true;
+			calibrating = false;
 			return;
 		}
 		
@@ -53,4 +52,23 @@ function Update()
 
 	// Show the calibrated values
 	this.guiText.text = "X: " + vals.x + "\nY: " + vals.y;
+}
+
+
+function OnGUI()
+{
+	GUI.Box( Rect( 10, 10, 160, 90 ), "Calibration Menu" );
+
+	if( GUI.Button( Rect( 20, 40, 140, 20 ), "Update Zero Vector" ) )
+	{
+		inp.UpdateZeroVector();
+	}
+
+	if( !calibrating )
+	{
+		if( GUI.Button( Rect( 20, 70, 140, 20 ), "Calibrate ratios" ) )
+		{
+			calibrating = true;
+		}
+	}
 }
