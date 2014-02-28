@@ -9,7 +9,8 @@
 
 	- UpdateZeroVector()()          - Updates the default orientation. (As current orientation, smooth)
 
-	- GetValues()(Vector2)          - Returns current calibrated X and Y axis values.
+	- GetInput()(Vector2)           - Returns current calibrated X and Y axis values.
+	- GetRawInput()(Vector2)        - Returns raw, uncalibrated values for X and Y.
 	- GetZeroVector()(Vector3)      - Get the zero vector that's currently in use.
 	- GetRatiosX()(Vector2)         - Get the X ratios.
 	- GetRatiosY()(Vector2)         - Get the Y ratios.
@@ -160,6 +161,12 @@ function UpdateZeroVector()
 function GetInput()
 {
 	return Vector2( currentX, currentY );
+}
+
+
+function GetRawInput()
+{
+	return Vector2( sensorInput.x, sensorInput.y );
 }
 
 
