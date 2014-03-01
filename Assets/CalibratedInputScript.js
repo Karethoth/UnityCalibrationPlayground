@@ -303,7 +303,7 @@ private function CalculateNewValues()
 	}
 	else
 	{
-		currentY = zeroedInput.z * ratiosZ.y;
+		currentZ = zeroedInput.z * ratiosZ.y;
 	}
 }
 
