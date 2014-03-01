@@ -107,6 +107,21 @@ function Update()
 	// Read the gyro+acceleration info for this update.
 	sensorInput = Input.acceleration;
 
+	// This is a hack to increase the physical ranges for X and Y.
+	// Should work just fine, except when the device is used upside-down
+	// (screen facing straing down). Making code tolerant for that would
+	// require use of quaternions and I won't do that until I really have to.
+	// - The software values are still kept in range [-1.0 ... 1.0]
+	sensorInput.x *= 0.5;
+	sensorInput.y *= 0.5;
+	if( sensorInput.z > 0 )
+	{
+		var direction = Vector2( sensorInput.x, sensorInput.y ).normalized * 0.5;
+		direction    += direction * sensorInput.z;
+		sensorInput.x = direction.x;
+		sensorInput.y = direction.y;
+	}
+
 	if( IsCalibrating() )
 	{
 		CalibrationStep();
