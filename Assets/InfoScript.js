@@ -1,18 +1,22 @@
 ﻿#pragma strict
 
 var inputNode:GameObject;
-var stickNode:GameObject;
+var stickNodeOne:GameObject;
+var stickNodeTwo:GameObject;
 
 private var inp:CalibratedInputScript;
 private var calibrating:boolean = false;
-private var stickStartPos:Vector3;
+private var stickOneStartPos:Vector3;
+private var stickTwoStartPos:Vector3;
 
 
 function Start()
 {
 	Screen.sleepTimeout = SleepTimeout.NeverSleep;
 	inp = inputNode.GetComponent( CalibratedInputScript );
-	stickStartPos = stickNode.transform.position;
+
+	stickOneStartPos = stickNodeOne.transform.position;
+	stickTwoStartPos = stickNodeTwo.transform.position;
 }
 
 
@@ -26,15 +30,15 @@ function Update()
 		Application.Quit();
 	}
 
-	// Fetch the input, calibrated or not.
-	var vals:Vector2 = inp.GetInput();
+	// Fetch the inputs.
+	var vals:Vector2    = inp.GetInput();
+	var rawVals:Vector2 = inp.GetRawInput();
 
-	// Move the stick to corresponding position.
-	var stickPosition:Vector3 = stickStartPos;
-	stickPosition.x += vals.x;
-	stickPosition.y += vals.y;
-	stickNode.transform.position = stickPosition;
+	// Move sticks to corresponding positions.
+	stickNodeOne.transform.position = stickOneStartPos + Vector3( vals.x, vals.y, 0.0 );
+	stickNodeTwo.transform.position = stickTwoStartPos + Vector3( rawVals.x, rawVals.y, 0.0 );
 
+	// Handle calibration logic on this side.
 	if( calibrating )
 	{
 		// If the input node isn't yet calibrating, it's time to start
