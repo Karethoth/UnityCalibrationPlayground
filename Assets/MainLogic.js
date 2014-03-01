@@ -1,13 +1,24 @@
 ﻿#pragma strict
 
 var inputNode:GameObject;
-var stickNodeOne:GameObject;
-var stickNodeTwo:GameObject;
+var stickOne:GameObject;
+var stickTwo:GameObject;
+var sliderOne:GameObject;
+var sliderTwo:GameObject;
+var infoTextOne:GameObject;
+var infoTextTwo:GameObject;
+
+private var textMeshOne:TextMesh;
+private var textMeshTwo:TextMesh;
+
 
 private var inp:CalibratedInputScript;
 private var calibrating:boolean = false;
+
 private var stickOneStartPos:Vector3;
 private var stickTwoStartPos:Vector3;
+private var sliderOneStartPos:Vector3;
+private var sliderTwoStartPos:Vector3;
 
 
 function Start()
@@ -15,8 +26,13 @@ function Start()
 	Screen.sleepTimeout = SleepTimeout.NeverSleep;
 	inp = inputNode.GetComponent( CalibratedInputScript );
 
-	stickOneStartPos = stickNodeOne.transform.position;
-	stickTwoStartPos = stickNodeTwo.transform.position;
+	textMeshOne = infoTextOne.GetComponent( TextMesh );
+	textMeshTwo = infoTextTwo.GetComponent( TextMesh );
+
+	stickOneStartPos  = stickOne.transform.position;
+	stickTwoStartPos  = stickTwo.transform.position;
+	sliderOneStartPos = sliderOne.transform.position;
+	sliderTwoStartPos = sliderTwo.transform.position;
 }
 
 
@@ -38,8 +54,12 @@ function Update()
 	var rawVals:Vector3 = inp.GetRawInput() * 2.0;
 
 	// Move sticks to corresponding positions.
-	stickNodeOne.transform.position = stickOneStartPos + Vector3( vals.x, vals.y, 0.0 );
-	stickNodeTwo.transform.position = stickTwoStartPos + Vector3( rawVals.x, rawVals.y, 0.0 );
+	stickOne.transform.position = stickOneStartPos + Vector3( vals.x, vals.y, 0.0 );
+	stickTwo.transform.position = stickTwoStartPos + Vector3( rawVals.x, rawVals.y, 0.0 );
+
+	// Move the sliders too.
+	sliderOne.transform.position = sliderOneStartPos + Vector3( 0, vals.z, 0.0 );
+	sliderTwo.transform.position = sliderTwoStartPos + Vector3( 0, rawVals.z, 0.0 );
 
 	// Handle calibration logic on this side.
 	if( calibrating )
@@ -60,14 +80,17 @@ function Update()
 		}
 
 		// Print out some data during the calibration, like time and the current raw values.
-		this.guiText.text = "" + (10 - inp.GetCalibrationTime()) + "\n" +
-		                    "X: " + vals.x + "\nY: " + vals.y + "\nZ: " + vals.z;
+		textMeshOne.text = "" + (10 - inp.GetCalibrationTime()) +
+		                   "\nX: " + vals.x + "\nY: " + vals.y + "\nZ: " + vals.z;
+		textMeshTwo.text = "" + (10 - inp.GetCalibrationTime()) +
+		                   "\nX: " + rawVals.x + "\nY: " + rawVals.y + "\nZ: " + rawVals.z;
 
 		return;
 	}
 
-	// Show the calibrated values
-	this.guiText.text = "X: " + vals.x + "\nY: " + vals.y + "\nZ: " + vals.z;
+	// Print out the values
+	textMeshOne.text = "X: " + vals.x    + "\nY: " + vals.y    + "\nZ: " + vals.z;
+	textMeshTwo.text = "X: " + rawVals.x + "\nY: " + rawVals.y + "\nZ: " + rawVals.z;
 }
 
 
