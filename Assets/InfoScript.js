@@ -30,9 +30,12 @@ function Update()
 		Application.Quit();
 	}
 
-	// Fetch the inputs.
-	var vals:Vector2    = inp.GetInput();
-	var rawVals:Vector2 = inp.GetRawInput();
+	// Fetch the inputs. They are multiplied by two because
+	// that is the needed length to reach the side of a pad.
+	//  (This could also be accomplished by halving
+	//   the reference values (setting them to 0.5).
+	var vals:Vector3    = inp.GetInput()    * 2.0;
+	var rawVals:Vector3 = inp.GetRawInput() * 2.0;
 
 	// Move sticks to corresponding positions.
 	stickNodeOne.transform.position = stickOneStartPos + Vector3( vals.x, vals.y, 0.0 );
@@ -58,13 +61,13 @@ function Update()
 
 		// Print out some data during the calibration, like time and the current raw values.
 		this.guiText.text = "" + (10 - inp.GetCalibrationTime()) + "\n" +
-		                    "X: " + vals.x + "\nY: " + vals.y;
+		                    "X: " + vals.x + "\nY: " + vals.y + "\nZ: " + vals.z;
 
 		return;
 	}
 
 	// Show the calibrated values
-	this.guiText.text = "X: " + vals.x + "\nY: " + vals.y;
+	this.guiText.text = "X: " + vals.x + "\nY: " + vals.y + "\nZ: " + vals.z;
 }
 
 

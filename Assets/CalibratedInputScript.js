@@ -9,11 +9,12 @@
 
 	- UpdateZeroVector()()          - Updates the default orientation. (As current orientation, smooth)
 
-	- GetInput()(Vector2)           - Returns current calibrated X and Y axis values.
-	- GetRawInput()(Vector2)        - Returns raw, uncalibrated values for X and Y.
+	- GetInput()(Vector3)           - Returns current calibrated axis values.
+	- GetRawInput()(Vector3)        - Returns raw, uncalibrated axis values.
 	- GetZeroVector()(Vector3)      - Get the zero vector that's currently in use.
 	- GetRatiosX()(Vector2)         - Get the X ratios.
 	- GetRatiosY()(Vector2)         - Get the Y ratios.
+	- GetRatiosZ()(Vector2)         - Get the Z ratios.
 
 	- GetCalibrationTime()(float)      - Returns time in seconds of how long the calibration has been going on.
 	- GetCalibrationSampleCount()(int) - Returns the count of calibration samples.
@@ -46,10 +47,12 @@ private var zeroVector:Vector3 = Vector3( 0.0, 0.0, 0.0 );
 // the values after calibration is done
 private var ratiosX:Vector2 = Vector2( 1.0, 1.0 );
 private var ratiosY:Vector2 = Vector2( 1.0, 1.0 );
+private var ratiosZ:Vector2 = Vector2( 1.0, 1.0 );
 
 // These are used to calculate the ratios
 private var maxValuesX:Vector2 = Vector2( 0.01, -0.01 );
 private var maxValuesY:Vector2 = Vector2( 0.01, -0.01 );
+private var maxValuesZ:Vector2 = Vector2( 0.01, -0.01 );
 
 // Holds values from Input.acceleration.
 //   This is just so that same values can be used
@@ -78,6 +81,7 @@ private var calibrationStartTime:float = 0.0;
 // Values that can be used outside this script
 static var currentX:float = 0;
 static var currentY:float = 0;
+static var currentZ:float = 0;
 
 
 
@@ -123,8 +127,10 @@ function StartCalibration()
 
 	maxValuesX = Vector2( 0.01, 0.01 );
 	maxValuesY = Vector2( 0.01, 0.01 );
+	maxValuesZ = Vector2( 0.01, 0.01 );
 	ratiosX = Vector2( 1.0, 1.0 );
 	ratiosY = Vector2( 1.0, 1.0 );
+	ratiosZ = Vector2( 1.0, 1.0 );
 }
 
 
@@ -135,6 +141,8 @@ function EndCalibration()
 	var ratioNegativeX = (0-referenceValues.x) / maxValuesX.y;
 	var ratioPositiveY = referenceValues.y     / maxValuesY.x;
 	var ratioNegativeY = (0-referenceValues.y) / maxValuesY.y;
+	var ratioPositiveZ = referenceValues.z     / maxValuesZ.x;
+	var ratioNegativeZ = (0-referenceValues.z) / maxValuesZ.y;
 
 	// We don't want zeros here.
 	if( ratioPositiveX == 0 )
@@ -145,9 +153,14 @@ function EndCalibration()
 		ratioPositiveY = 0.01;
 	if( ratioNegativeY == 0 )
 		ratioNegativeY = 0.01;
+	if( ratioPositiveZ == 0 )
+		ratioPositiveZ = 0.01;
+	if( ratioNegativeZ == 0 )
+		ratioNegativeZ = 0.01;
 
 	ratiosX = Vector2( ratioPositiveX, ratioNegativeX );
 	ratiosY = Vector2( ratioPositiveY, ratioNegativeY );
+	ratiosZ = Vector2( ratioPositiveZ, ratioNegativeZ );
 
 	calibrating = false;
 	calibrationSampleCount = 0;
@@ -174,13 +187,13 @@ function UpdateZeroVector()
 
 function GetInput()
 {
-	return Vector2( currentX, currentY );
+	return Vector3( currentX, currentY, currentZ );
 }
 
 
 function GetRawInput()
 {
-	return Vector2( sensorInput.x, sensorInput.y );
+	return sensorInput;
 }
 
 
@@ -283,6 +296,15 @@ private function CalculateNewValues()
 	{
 		currentY = zeroedInput.y * ratiosY.y;
 	}
+
+	if( zeroedInput.z > 0 )
+	{
+		currentZ = zeroedInput.z * ratiosZ.x;
+	}
+	else
+	{
+		currentY = zeroedInput.z * ratiosZ.y;
+	}
 }
 
 
@@ -313,5 +335,17 @@ private function ChaoticCalibration()
 	         currentY >= 0-maxValueLimits.y  )
 	{
 		maxValuesY.y = currentY;
+	}
+
+	// And for the Z value.
+	if( currentZ > maxValuesZ.x &&
+	    currentZ <= maxValueLimits.z )
+	{
+		maxValuesZ.x = currentZ;
+	}
+	else if( currentZ < maxValuesY.y &&
+	         currentZ >= 0-maxValueLimits.z  )
+	{
+		maxValuesZ.y = currentZ;
 	}
 }
