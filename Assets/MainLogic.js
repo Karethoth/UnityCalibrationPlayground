@@ -7,9 +7,11 @@ var sliderOne:GameObject;
 var sliderTwo:GameObject;
 var infoTextOne:GameObject;
 var infoTextTwo:GameObject;
+var infoTextBox:GameObject;
 
 private var textMeshOne:TextMesh;
 private var textMeshTwo:TextMesh;
+private var infoTextMesh:TextMesh;
 
 
 private var inp:CalibratedInputScript;
@@ -26,8 +28,11 @@ function Start()
 	Screen.sleepTimeout = SleepTimeout.NeverSleep;
 	inp = inputNode.GetComponent( CalibratedInputScript );
 
+	inp.SetClampingDelegate( Clamper );
+
 	textMeshOne = infoTextOne.GetComponent( TextMesh );
 	textMeshTwo = infoTextTwo.GetComponent( TextMesh );
+	infoTextMesh = infoTextBox.GetComponent( TextMesh );
 
 	stickOneStartPos  = stickOne.transform.position;
 	stickTwoStartPos  = stickTwo.transform.position;
@@ -50,7 +55,7 @@ function Update()
 	// that is the needed length to reach the side of a pad.
 	//  (This could also be accomplished by halving
 	//   the reference values (setting them to 0.5).
-	var vals:Vector3    = inp.GetInput()    * 2.0;
+	var vals:Vector3    = inp.acceleration  * 2.0;
 	var rawVals:Vector3 = inp.GetRawInput() * 2.0;
 
 	// Move sticks to corresponding positions.
@@ -76,38 +81,65 @@ function Update()
 		{
 			inp.EndCalibration();
 			calibrating = false;
+			infoTextMesh.text = "";
 			return;
 		}
 
-		// Print out some data during the calibration, like time and the current raw values.
-		textMeshOne.text = "" + (10 - inp.GetCalibrationTime()) +
-		                   "\nX: " + vals.x + "\nY: " + vals.y + "\nZ: " + vals.z;
-		textMeshTwo.text = "" + (10 - inp.GetCalibrationTime()) +
-		                   "\nX: " + rawVals.x + "\nY: " + rawVals.y + "\nZ: " + rawVals.z;
-
+		// Print out the time left for calibration:
+		infoTextMesh.text = "Calibrating:\n" +
+		                    (10 - inp.GetCalibrationTime()).ToString( "F1" ) +
+		                    "\nseconds left";
 		return;
 	}
 
 	// Print out the values
-	textMeshOne.text = "X: " + vals.x    + "\nY: " + vals.y    + "\nZ: " + vals.z;
-	textMeshTwo.text = "X: " + rawVals.x + "\nY: " + rawVals.y + "\nZ: " + rawVals.z;
+	textMeshOne.text = "X: "   + vals.x.ToString( "F2" ) +
+	                   "\nY: " + vals.y.ToString( "F2" ) +
+	                   "\nZ: " + vals.z.ToString( "F2" );
+
+	textMeshTwo.text = "X: "   + rawVals.x.ToString( "F2" ) +
+	                   "\nY: " + rawVals.y.ToString( "F2" ) +
+	                   "\nZ: " + rawVals.z.ToString( "F2" );
+
 }
 
 
 function OnGUI()
 {
-	GUI.Box( Rect( 10, 10, 160, 90 ), "Calibration Menu" );
-
-	if( GUI.Button( Rect( 20, 40, 140, 20 ), "Update Zero Vector" ) )
-	{
-		inp.UpdateZeroVector();
-	}
+	GUI.Box( Rect( 10, 10, 160, 130 ), "Calibration Menu" );
 
 	if( !calibrating )
 	{
-		if( GUI.Button( Rect( 20, 70, 140, 20 ), "Calibrate ratios" ) )
+		if( GUI.Button( Rect( 20, 40, 140, 40 ), "Update Zero Vector" ) )
+		{
+			inp.UpdateZeroVector();
+		}
+
+		if( GUI.Button( Rect( 20, 90, 140, 40 ), "Calibrate ratios" ) )
 		{
 			calibrating = true;
 		}
 	}
+}
+
+
+
+function Clamper( vals:Vector3 )
+{
+	if( vals.x > 1.0 )
+		vals.x = 1.0;
+	else if( vals.x < -1.0 )
+		vals.x = -1.0;
+
+	if( vals.y > 1.0 )
+		vals.y = 1.0;
+	else if( vals.y < -1.0 )
+		vals.y = -1.0;
+
+	if( vals.z > 1.0 )
+		vals.z = 1.0;
+	else if( vals.z < -1.0 )
+		vals.z = -1.0;
+
+	return vals;
 }

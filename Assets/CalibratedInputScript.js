@@ -4,6 +4,8 @@
   Description of the API / available functions:
   ( functionName(input values)(return values) - description )
 
+    - acceleration:Vector3 - (Read Only) the current values that have been calibrated.
+
 	- StartCalibration()()          - Starts the calibration.
 	- EndCalibration()()            - Ends the calibration.
 
@@ -22,6 +24,8 @@
 	- SetReferenceValues(Vector3)() - Set the reference values.
 	- SetMaximumValues(Vector3)()   - Set the maximum values.
 	- SetZeroVector(Vector3)()      - Set the zero vector manually.
+
+	- SetClampingDelegate(function(Vector3))() - Set the clamping function. The function needs to return Vector3.
 
 	- IsCalibrating()(boolean)      - Returns either true or false, depending on the current state.
 */
@@ -71,18 +75,24 @@ private var calibrating:boolean = false;
 // The calibration function we will be using.
 private var CalibrationStep:function() = ChaoticCalibration;
 
+// The clamping function we will be using.
+private var ClampingFunction:function( Vector3 ):Vector3;
+
 // Count of calibration samples we have
 private var calibrationSampleCount:int = 0;
 
 // Time when the calibration started
 private var calibrationStartTime:float = 0.0;
 
+// Private copy of acceleration we will calculate
+private var _acceleration:Vector3;
+
 
 // Values that can be used outside this script
 static var currentX:float = 0;
 static var currentY:float = 0;
 static var currentZ:float = 0;
-
+static var acceleration:Vector3;
 
 
 function Start()
@@ -111,7 +121,8 @@ function Update()
 	// Should work just fine, except when the device is used upside-down
 	// (screen facing straing down). Making code tolerant for that would
 	// require use of quaternions and I won't do that until I really have to.
-	// - The software values are still kept in range [-1.0 ... 1.0]
+	// - The software values are still kept in range [-1.0 ... 1.0] by default.
+	// TODO - Make using it an option instead of forcing it.
 	sensorInput.x *= 0.5;
 	sensorInput.y *= 0.5;
 	if( sensorInput.z > 0 )
@@ -202,7 +213,7 @@ function UpdateZeroVector()
 
 function GetInput()
 {
-	return Vector3( currentX, currentY, currentZ );
+	return _acceleration;
 }
 
 
@@ -264,6 +275,12 @@ function SetZeroVector( newZeroVector:Vector3 )
 }
 
 
+function SetClampingDelegate( clamper:function( Vector3 ):Vector3 )
+{
+	ClampingFunction = clamper;
+}
+
+
 function IsCalibrating()
 {
 	return calibrating;
@@ -320,6 +337,15 @@ private function CalculateNewValues()
 	{
 		currentZ = zeroedInput.z * ratiosZ.y;
 	}
+
+	var vals = Vector3( currentX, currentY, currentZ );
+	if( ClampingFunction )
+	{
+		vals = ClampingFunction( vals );
+	}
+
+	acceleration = vals;
+	_acceleration = vals;
 }
 
 
