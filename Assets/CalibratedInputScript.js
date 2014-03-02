@@ -22,8 +22,6 @@
 	- GetCalibrationTime()(float)      - Returns time in seconds of how long the calibration has been going on.
 	- GetCalibrationSampleCount()(int) - Returns the count of calibration samples.
 
-	- SetReferenceValues(Vector3)() - Set the reference values.
-	- SetMaximumValues(Vector3)()   - Set the maximum values.
 	- SetZeroVector(Vector3)()      - Set the zero vector manually.
 
 	- SetClampingDelegate(function(Vector3))() - Set the clamping function. The function needs to return Vector3.
@@ -35,14 +33,49 @@
 #pragma strict
 
 
-// Reference values, which are used to calculate the ratio.
-private var referenceValues:Vector3 = Vector3( 1.0, 1.0, 1.0 );
+// Used to store and pass around ratios
+public class RatioInformation
+{
+	public var x:Vector2;
+	public var y:Vector2;
+	public var z:Vector2;
 
-// The reference values can't be more than
-// the maximum values, desided by the developer.
-//   (These are just the default values and can
-//    be changed later in scripts or by Unity.)
-private var maxValueLimits:Vector3  = Vector3( 1.0, 1.0, 1.0 );
+	public function RatioInformation()
+	{
+		x = Vector2( 1, 1 );
+		y = Vector2( 1, 1 );
+		z = Vector2( 1, 1 );
+	}
+
+	public function RatioInformation( X:Vector2, Y:Vector2, Z:Vector2 )
+	{
+		x = X;
+		y = Y;
+		z = Z;
+	}
+}
+
+
+
+// Used as an interface for different calibration schemes
+public class CalibrationScheme
+{
+	public function Start()
+	{
+		// Initialization of variables goes here
+	}
+
+	public function End():RatioInformation
+	{
+		return RatioInformation();
+	}
+
+	public function Step( currentInput:Vector3, zeroVector:Vector3 )
+	{
+	}
+}
+
+
 
 // The Zero Vector that indicates
 // the default orientation of device
@@ -53,11 +86,6 @@ private var zeroVector:Vector3 = Vector3( 0.0, 0.0, 0.0 );
 private var ratiosX:Vector2 = Vector2( 1.0, 1.0 );
 private var ratiosY:Vector2 = Vector2( 1.0, 1.0 );
 private var ratiosZ:Vector2 = Vector2( 1.0, 1.0 );
-
-// These are used to calculate the ratios
-private var maxValuesX:Vector2 = Vector2( 0.01, -0.01 );
-private var maxValuesY:Vector2 = Vector2( 0.01, -0.01 );
-private var maxValuesZ:Vector2 = Vector2( 0.01, -0.01 );
 
 // Holds values from Input.acceleration.
 //   This is just so that same values can be used
@@ -76,8 +104,8 @@ private var zeroBufferSize:int = 20;
 // We want to know if we're calibrating or not.
 private var calibrating:boolean = false;
 
-// The calibration function we will be using.
-private var CalibrationStep:function() = ChaoticCalibration;
+// The calibration scheme we will be using.
+private var calibrationScheme:CalibrationScheme = ChaoticCalibration();
 
 // The clamping function we will be using.
 private var ClampingFunction:function( Vector3 ):Vector3;
@@ -142,7 +170,7 @@ function Update()
 
 	if( IsCalibrating() )
 	{
-		CalibrationStep();
+		calibrationScheme.Step( sensorInput, zeroVector );
 		++calibrationSampleCount;
 	}
 
@@ -158,46 +186,24 @@ function StartCalibration()
 	calibrating = true;
 	calibrationStartTime = Time.time;
 
-	maxValuesX = Vector2( 0.01, 0.01 );
-	maxValuesY = Vector2( 0.01, 0.01 );
-	maxValuesZ = Vector2( 0.01, 0.01 );
 	ratiosX = Vector2( 1.0, 1.0 );
 	ratiosY = Vector2( 1.0, 1.0 );
 	ratiosZ = Vector2( 1.0, 1.0 );
+
+	calibrationScheme.Start();
 }
 
 
 function EndCalibration()
 {
-	// Calculate ratios
-	var ratioPositiveX = referenceValues.x     / maxValuesX.x;
-	var ratioNegativeX = (0-referenceValues.x) / maxValuesX.y;
-	var ratioPositiveY = referenceValues.y     / maxValuesY.x;
-	var ratioNegativeY = (0-referenceValues.y) / maxValuesY.y;
-	var ratioPositiveZ = referenceValues.z     / maxValuesZ.x;
-	var ratioNegativeZ = (0-referenceValues.z) / maxValuesZ.y;
-
-	// We don't want zeros here.
-	if( ratioPositiveX == 0 )
-		ratioPositiveX = 0.01;
-	if( ratioNegativeX == 0 )
-		ratioNegativeX = 0.01;
-	if( ratioPositiveY == 0 )
-		ratioPositiveY = 0.01;
-	if( ratioNegativeY == 0 )
-		ratioNegativeY = 0.01;
-	if( ratioPositiveZ == 0 )
-		ratioPositiveZ = 0.01;
-	if( ratioNegativeZ == 0 )
-		ratioNegativeZ = 0.01;
-
-	ratiosX = Vector2( ratioPositiveX, ratioNegativeX );
-	ratiosY = Vector2( ratioPositiveY, ratioNegativeY );
-	ratiosZ = Vector2( ratioPositiveZ, ratioNegativeZ );
-
 	calibrating = false;
 	calibrationSampleCount = 0;
 	calibrationStartTime   = 0;
+
+	var ratios:RatioInformation = calibrationScheme.End();
+	ratiosX = ratios.x;
+	ratiosY = ratios.y;
+	ratiosZ = ratios.z;
 }
 
 
@@ -260,19 +266,6 @@ function GetCalibrationTime()
 function GetCalibrationSampleCount()
 {
 	return calibrationSampleCount;
-}
-
-
-
-function SetReferenceValues( newReferenceValues:Vector3 )
-{
-	referenceValues = newReferenceValues;
-}
-
-
-function SetMaximumValues( newMaximumValues:Vector3 )
-{
-	maxValueLimits = newMaximumValues;
 }
 
 
@@ -357,43 +350,117 @@ private function CalculateNewValues()
 
 
 
-// Example of a calibration function
-private function ChaoticCalibration()
+// Example calibration scheme.
+// Chaotic calibration.
+// - This is waiting to be moved to a new file.
+
+public class ChaoticCalibration extends CalibrationScheme
 {
-	// Check if the current X value goes over any of so far
-	// observed maximum values but still remains below the hard limits.
-	if( currentX > maxValuesX.x &&
-	    currentX <= maxValueLimits.x )
+	// Reference values, which are used to calculate the ratio.
+	private var referenceValues:Vector3 = Vector3( 1.0, 1.0, 1.0 );
+
+	// The reference values can't be more than
+	// the maximum values, desided by the developer.
+	private var maxValueLimits:Vector3  = Vector3( 1.0, 1.0, 1.0 );
+
+	// These are used to hold the current maximum values
+	private var maxValuesX:Vector2 = Vector2( 0.01, -0.01 );
+	private var maxValuesY:Vector2 = Vector2( 0.01, -0.01 );
+	private var maxValuesZ:Vector2 = Vector2( 0.01, -0.01 );
+
+
+	// This is the start function, which is
+	// called when new calibration takes place.
+	public function Start()
 	{
-		maxValuesX.x = currentX;
-	}
-	else if( currentX < maxValuesX.y &&
-	         currentX >= 0-maxValueLimits.x)
-	{
-		maxValuesX.y = currentX;
+		maxValuesX = Vector2( 0.01, 0.01 );
+		maxValuesY = Vector2( 0.01, 0.01 );
+		maxValuesZ = Vector2( 0.01, 0.01 );
 	}
 
-	// Do the same for the Y value.
-	if( currentY > maxValuesY.x &&
-	    currentY <= maxValueLimits.y )
+	// And this is called when calibration process stops.
+	// It has to return an object, containing ratios as
+	// Vector2 types as x, y and z in an object.
+	public function End():RatioInformation
 	{
-		maxValuesY.x = currentY;
-	}
-	else if( currentY < maxValuesY.y &&
-	         currentY >= 0-maxValueLimits.y  )
-	{
-		maxValuesY.y = currentY;
+		// Calculate ratios
+		var ratioPositiveX = referenceValues.x     / maxValuesX.x;
+		var ratioNegativeX = (0-referenceValues.x) / maxValuesX.y;
+		var ratioPositiveY = referenceValues.y     / maxValuesY.x;
+		var ratioNegativeY = (0-referenceValues.y) / maxValuesY.y;
+		var ratioPositiveZ = referenceValues.z     / maxValuesZ.x;
+		var ratioNegativeZ = (0-referenceValues.z) / maxValuesZ.y;
+
+		// We don't want zeros here.
+		if( ratioPositiveX == 0 )
+			ratioPositiveX = 0.01;
+		if( ratioNegativeX == 0 )
+			ratioNegativeX = 0.01;
+		if( ratioPositiveY == 0 )
+			ratioPositiveY = 0.01;
+		if( ratioNegativeY == 0 )
+			ratioNegativeY = 0.01;
+		if( ratioPositiveZ == 0 )
+			ratioPositiveZ = 0.01;
+		if( ratioNegativeZ == 0 )
+			ratioNegativeZ = 0.01;
+
+		var ratiosX = Vector2( ratioPositiveX, ratioNegativeX );
+		var ratiosY = Vector2( ratioPositiveY, ratioNegativeY );
+		var ratiosZ = Vector2( ratioPositiveZ, ratioNegativeZ );
+
+		// And we shall return an object, containing the ratios:
+		var ratios:RatioInformation = RatioInformation(
+			ratiosX,
+			ratiosY,
+			ratiosZ
+		);
+
+		return ratios;
 	}
 
-	// And for the Z value.
-	if( currentZ > maxValuesZ.x &&
-	    currentZ <= maxValueLimits.z )
+
+	public function Step( currentValues:Vector3, zeroVector:Vector3 )
 	{
-		maxValuesZ.x = currentZ;
-	}
-	else if( currentZ < maxValuesY.y &&
-	         currentZ >= 0-maxValueLimits.z  )
-	{
-		maxValuesZ.y = currentZ;
+		var currX:float = currentValues.x;
+		var currY:float = currentValues.y;
+		var currZ:float = currentValues.z;
+
+		// Check if the current X value goes over any of so far
+		// observed maximum values but still remains below the hard limits.
+		if( currX > maxValuesX.x &&
+		    currX <= maxValueLimits.x )
+		{
+			maxValuesX.x = currX;
+		}
+		else if( currX < maxValuesX.y &&
+		         currX >= 0-maxValueLimits.x)
+		{
+			maxValuesX.y = currX;
+		}
+
+		// Do the same for the Y value.
+		if( currY > maxValuesY.x &&
+		    currY <= maxValueLimits.y )
+		{
+			maxValuesY.x = currY;
+		}
+		else if( currY < maxValuesY.y &&
+		         currY >= 0-maxValueLimits.y  )
+		{
+			maxValuesY.y = currY;
+		}
+
+		// And for the Z value.
+		if( currZ > maxValuesZ.x &&
+		    currZ <= maxValueLimits.z )
+		{
+			maxValuesZ.x = currZ;
+		}
+		else if( currZ < maxValuesY.y &&
+		         currZ >= 0-maxValueLimits.z  )
+		{
+			maxValuesZ.y = currZ;
+		}
 	}
 }
