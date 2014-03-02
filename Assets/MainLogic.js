@@ -89,7 +89,6 @@ function Update()
 		infoTextMesh.text = "Calibrating:\n" +
 		                    (10 - inp.GetCalibrationTime()).ToString( "F1" ) +
 		                    "\nseconds left";
-		return;
 	}
 
 	// Print out the values
