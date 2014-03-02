@@ -64,6 +64,9 @@ private var maxValuesZ:Vector2 = Vector2( 0.01, -0.01 );
 //   per update, without passing them all over the place.
 private var sensorInput:Vector3;
 
+// Holds the raw input.
+private var _rawInput:Vector3;
+
 
 // These are used when calibrating the zero vector.
 private var zeroBuffer:Array = new Array();
@@ -120,24 +123,21 @@ function Update()
 {
 	// Read the gyro+acceleration info for this update.
 	sensorInput = Input.acceleration;
+	_rawInput   = sensorInput;
 
 	// This is a hack to increase the physical ranges for X and Y.
 	// Should work just fine, except when the device is used upside-down
 	// (screen facing straing down). Making code tolerant for that would
 	// require use of quaternions and I won't do that until I really have to.
 	// - The software values are still kept in range [-1.0 ... 1.0] by default.
-	// TODO: Make the value arc linear instead of "circle-like".
 	if( rangeHack )
 	{
-		sensorInput.x *= 0.5;
-		sensorInput.y *= 0.5;
-		if( sensorInput.z > 0 )
-		{
-			var direction = Vector2( sensorInput.x, sensorInput.y ).normalized * 0.5;
-			direction    += direction * sensorInput.z;
-			sensorInput.x = direction.x;
-			sensorInput.y = direction.y;
-		}
+		var angle     = Mathf.Acos( Vector3.Dot( Vector3( 0, 0, -1 ), sensorInput.normalized ));
+		var distance  = angle / Mathf.PI;
+		var direction = Vector2( sensorInput.x, sensorInput.y ).normalized;
+
+		sensorInput.x = direction.x * distance;
+		sensorInput.y = direction.y * distance;
 	}
 
 	if( IsCalibrating() )
@@ -226,7 +226,7 @@ function GetInput()
 
 function GetRawInput()
 {
-	return sensorInput;
+	return _rawInput;
 }
 
 
