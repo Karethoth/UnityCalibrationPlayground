@@ -5,6 +5,7 @@
   ( functionName(input values)(return values) - description )
 
     - acceleration:Vector3 - (Read Only) the current values that have been calibrated.
+    - rangeHack:boolean    - If set to true, will "double" the physical angles for orientation.
 
 	- StartCalibration()()          - Starts the calibration.
 	- EndCalibration()()            - Ends the calibration.
@@ -94,6 +95,9 @@ static var currentY:float = 0;
 static var currentZ:float = 0;
 static var acceleration:Vector3;
 
+// Public flag to keep taps on if we should be using the range hack or not
+static var rangeHack:boolean = false;
+
 
 function Start()
 {
@@ -122,15 +126,18 @@ function Update()
 	// (screen facing straing down). Making code tolerant for that would
 	// require use of quaternions and I won't do that until I really have to.
 	// - The software values are still kept in range [-1.0 ... 1.0] by default.
-	// TODO - Make using it an option instead of forcing it.
-	sensorInput.x *= 0.5;
-	sensorInput.y *= 0.5;
-	if( sensorInput.z > 0 )
+	// TODO: Make the value arc linear instead of "circle-like".
+	if( rangeHack )
 	{
-		var direction = Vector2( sensorInput.x, sensorInput.y ).normalized * 0.5;
-		direction    += direction * sensorInput.z;
-		sensorInput.x = direction.x;
-		sensorInput.y = direction.y;
+		sensorInput.x *= 0.5;
+		sensorInput.y *= 0.5;
+		if( sensorInput.z > 0 )
+		{
+			var direction = Vector2( sensorInput.x, sensorInput.y ).normalized * 0.5;
+			direction    += direction * sensorInput.z;
+			sensorInput.x = direction.x;
+			sensorInput.y = direction.y;
+		}
 	}
 
 	if( IsCalibrating() )

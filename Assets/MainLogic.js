@@ -106,22 +106,27 @@ function Update()
 
 function OnGUI()
 {
-	GUI.Box( Rect( 10, 10, 160, 130 ), "Calibration Menu" );
+	GUI.Box( Rect( 10, 10, 150, 180 ), "Calibration Menu" );
 
 	if( !calibrating )
 	{
-		if( GUI.Button( Rect( 20, 40, 140, 40 ), "Update Zero Vector" ) )
+		if( GUI.Button( Rect( 20, 40, 130, 40 ), "Update Zero Vector" ) )
 		{
 			inp.UpdateZeroVector();
 		}
 
-		if( GUI.Button( Rect( 20, 90, 140, 40 ), "Calibrate ratios" ) )
+		if( GUI.Button( Rect( 20, 90, 130, 40 ), "Calibrate ratios" ) )
 		{
 			calibrating = true;
 		}
+
+		var label = inp.rangeHack ? "Normal Range" : "Extend range";
+		if( GUI.Button( Rect( 20, 140, 130, 40 ), label ) )
+		{
+			inp.rangeHack = !inp.rangeHack;
+		}
 	}
 }
-
 
 
 function Clamper( vals:Vector3 )
