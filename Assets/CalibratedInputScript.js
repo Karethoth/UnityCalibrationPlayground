@@ -22,9 +22,9 @@
 	- GetCalibrationTime()(float)      - Returns time in seconds of how long the calibration has been going on.
 	- GetCalibrationSampleCount()(int) - Returns the count of calibration samples.
 
-	- SetZeroVector(Vector3)()      - Set the zero vector manually.
-
-	- SetClampingDelegate(function(Vector3))() - Set the clamping function. The function needs to return Vector3.
+	- SetZeroVector(Vector3)()                  - Set the zero vector manually.
+	- SetCalibrationScheme(CalibrationScheme)() - Set the calibration scheme.
+	- SetClampingDelegate(function(Vector3))()  - Set the clamping function. The function needs to return Vector3.
 
 	- IsCalibrating()(boolean)      - Returns either true or false, depending on the current state.
 */
@@ -275,6 +275,11 @@ function SetZeroVector( newZeroVector:Vector3 )
 }
 
 
+function SetCalibrationScheme( newScheme:CalibrationScheme )
+{
+	calibrationScheme = newScheme;
+}
+
 function SetClampingDelegate( clamper:function( Vector3 ):Vector3 )
 {
 	ClampingFunction = clamper;
@@ -351,7 +356,8 @@ private function CalculateNewValues()
 
 
 // Example calibration scheme.
-// Chaotic calibration.
+// Chaotic calibration: use the maximum values gotten during the
+// calibration as the source to calculate ratios.
 // - This is waiting to be moved to a new file.
 
 public class ChaoticCalibration extends CalibrationScheme
@@ -422,6 +428,7 @@ public class ChaoticCalibration extends CalibrationScheme
 
 	public function Step( currentValues:Vector3, zeroVector:Vector3 )
 	{
+		currentValues  -= zeroVector;
 		var currX:float = currentValues.x;
 		var currY:float = currentValues.y;
 		var currZ:float = currentValues.z;
