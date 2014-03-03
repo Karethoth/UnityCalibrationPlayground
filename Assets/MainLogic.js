@@ -87,8 +87,7 @@ function Update()
 
 		// Print out the time left for calibration:
 		infoTextMesh.text = "Calibrating:\n" +
-		                    (10 - inp.GetCalibrationTime()).ToString( "F1" ) +
-		                    "\nseconds left";
+		                    (10 - inp.GetCalibrationTime()).ToString( "F1" );
 	}
 
 	// Print out the values
@@ -104,22 +103,26 @@ function Update()
 
 function OnGUI()
 {
-	GUI.Box( Rect( 10, 10, 150, 180 ), "Calibration Menu" );
+	var buttonStyle = GUIStyle( "button" );
+	buttonStyle.fontSize = 20;
+	buttonStyle.wordWrap = true;
+
+	GUI.Box( Rect( 10, 10, 150, 290 ), "" );
 
 	if( !calibrating )
 	{
-		if( GUI.Button( Rect( 20, 40, 130, 40 ), "Update Zero Vector" ) )
+		if( GUI.Button( Rect( 20, 30, 130, 80 ), "Update Zero Vector", buttonStyle ) )
 		{
 			inp.UpdateZeroVector();
 		}
 
-		if( GUI.Button( Rect( 20, 90, 130, 40 ), "Calibrate ratios" ) )
+		if( GUI.Button( Rect( 20, 120, 130, 80 ), "Calibrate ratios", buttonStyle ) )
 		{
 			calibrating = true;
 		}
 
 		var label = inp.rangeHack ? "Normal Range" : "Extend range";
-		if( GUI.Button( Rect( 20, 140, 130, 40 ), label ) )
+		if( GUI.Button( Rect( 20, 210, 130, 80 ), label, buttonStyle ) )
 		{
 			inp.rangeHack = !inp.rangeHack;
 		}
