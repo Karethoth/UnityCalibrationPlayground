@@ -63,15 +63,18 @@ public class CalibrationScheme
 	public function Start()
 	{
 		// Initialization of variables goes here
+		Debug.LogWarning( "Using default CalibrationScheme::Start method. Please, overload me." );
 	}
 
 	public function End():RatioInformation
 	{
+		Debug.LogWarning( "Using default CalibrationScheme::End method. Please, overload me." );
 		return RatioInformation();
 	}
 
 	public function Step( currentInput:Vector3, zeroVector:Vector3 )
 	{
+		Debug.LogWarning( "Using default CalibrationScheme::Step method. Please, overload me." );
 	}
 }
 
