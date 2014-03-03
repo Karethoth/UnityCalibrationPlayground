@@ -92,14 +92,13 @@ function Update()
 	}
 
 	// Print out the values
-	textMeshOne.text = "X: "   + vals.x.ToString( "F2" ) +
-	                   "\nY: " + vals.y.ToString( "F2" ) +
-	                   "\nZ: " + vals.z.ToString( "F2" );
+	textMeshOne.text = "X: "   + (vals.x * 0.5).ToString( "F2" ) +
+	                   "\nY: " + (vals.y * 0.5).ToString( "F2" ) +
+	                   "\nZ: " + (vals.z * 0.5).ToString( "F2" );
 
-	textMeshTwo.text = "X: "   + rawVals.x.ToString( "F2" ) +
-	                   "\nY: " + rawVals.y.ToString( "F2" ) +
-	                   "\nZ: " + rawVals.z.ToString( "F2" );
-
+	textMeshTwo.text = "X: "   + (rawVals.x * 0.5).ToString( "F2" ) +
+	                   "\nY: " + (rawVals.y * 0.5).ToString( "F2" ) +
+	                   "\nZ: " + (rawVals.z * 0.5).ToString( "F2" );
 }
 
 
