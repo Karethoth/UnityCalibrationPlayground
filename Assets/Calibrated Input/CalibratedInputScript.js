@@ -4,8 +4,9 @@
   Description of the API / available functions:
   ( functionName(input values)(return values) - description )
 
-    - acceleration:Vector3 - (Read Only) the current values that have been calibrated.
-    - rangeHack:boolean    - If set to true, will "double" the physical angles for orientation.
+    - acceleration:Vector3     - (Read Only) the current values that have been calibrated.
+    - rangeHack:boolean        - If set to true, will "double" the physical angles for orientation.
+    - inputFromGamepad:boolean - If set to true, input will be fetched from a controller instead of Input.acceleration.
 
 	- StartCalibration()()          - Starts the calibration.
 	- EndCalibration()()            - Ends the calibration.
@@ -122,7 +123,6 @@ private var calibrationStartTime:float = 0.0;
 // Private copy of acceleration we will calculate
 private var _acceleration:Vector3;
 
-
 // Values that can be used outside this script
 static var currentX:float = 0;
 static var currentY:float = 0;
@@ -131,6 +131,10 @@ static var acceleration:Vector3;
 
 // Public flag to keep taps on if we should be using the range hack or not
 static var rangeHack:boolean = false;
+
+// Are we reading the input data from Input.acceleration or gamepad
+static var inputFromGamepad:boolean = false;
+
 
 
 function Start()
@@ -153,8 +157,16 @@ function Start()
 
 function Update()
 {
-	// Read the gyro+acceleration info for this update.
-	sensorInput = Input.acceleration;
+	if( !inputFromGamepad )
+	{
+		// Read the gyro+acceleration info for this update.
+		sensorInput = Input.acceleration;
+	}
+	else
+	{
+		sensorInput = FakeInputFromGamepad();
+	}
+
 	_rawInput   = sensorInput;
 
 	// This is a hack to increase the physical ranges for X and Y.
@@ -162,7 +174,7 @@ function Update()
 	// (screen facing straing down). Making code tolerant for that would
 	// require use of quaternions and I won't do that until I really have to.
 	// - The software values are still kept in range [-1.0 ... 1.0] by default.
-	if( rangeHack )
+	if( rangeHack && !inputFromGamepad )
 	{
 		var angle     = Mathf.Acos( Vector3.Dot( Vector3( 0, 0, -1 ), sensorInput.normalized ));
 		var distance  = angle / Mathf.PI;
@@ -181,7 +193,6 @@ function Update()
 	// Update
 	CalculateNewValues();
 }
-
 
 
 // Public functions:
@@ -302,6 +313,15 @@ private function Initialize()
 {
 	zeroVector = Input.acceleration;
 	UpdateZeroVector();
+}
+
+
+private function FakeInputFromGamepad():Vector3
+{
+	var inputData:Vector3 = Vector3();
+	inputData.x = Input.GetAxis( "Horizontal" );
+	inputData.y = Input.GetAxis( "Vertical" );
+	return inputData;
 }
 
 
