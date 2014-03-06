@@ -22,8 +22,6 @@ private var stickTwoStartPos:Vector3;
 private var sliderOneStartPos:Vector3;
 private var sliderTwoStartPos:Vector3;
 
-private var usingGamepad:boolean = false;
-
 
 function Start()
 {
@@ -45,7 +43,6 @@ function Start()
 	    Application.platform == RuntimePlatform.WindowsWebPlayer ||
 	    Application.platform == RuntimePlatform.WindowsEditor )
 	{
-		usingGamepad = true;
 		inp.inputFromGamepad = true;
 	};
 }

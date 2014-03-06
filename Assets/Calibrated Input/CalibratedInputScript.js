@@ -141,7 +141,6 @@ static var rangeHack:boolean = false;
 // Are we reading the input data from Input.acceleration or gamepad
 static var inputFromGamepad:boolean = false;
 
-
 // The axes need to be invertable.
 static var invertedX:boolean = false;
 static var invertedY:boolean = false;
