@@ -4,10 +4,16 @@
   Description of the API / available functions:
   ( functionName(input values)(return values) - description )
 
+	VARIABLES:
     - acceleration:Vector3     - (Read Only) the current values that have been calibrated.
     - rangeHack:boolean        - If set to true, will "double" the physical angles for orientation.
     - inputFromGamepad:boolean - If set to true, input will be fetched from a controller instead of Input.acceleration.
+    - invertedX:boolean        - If set to true, the X-axis will be inverted
+    - invertedY:boolean        - If set to true, the Y-axis will be inverted
+    - invertedZ:boolean        - If set to true, the Z-axis will be inverted
 
+
+	FUNCTIONS:
 	- StartCalibration()()          - Starts the calibration.
 	- EndCalibration()()            - Ends the calibration.
 
@@ -135,6 +141,11 @@ static var rangeHack:boolean = false;
 // Are we reading the input data from Input.acceleration or gamepad
 static var inputFromGamepad:boolean = false;
 
+
+// The axes need to be invertable.
+static var invertedX:boolean = false;
+static var invertedY:boolean = false;
+static var invertedZ:boolean = false;
 
 
 function Start()
@@ -340,6 +351,7 @@ private function CalculateNewValues()
 {
 	var zeroedInput = sensorInput - zeroVector;
 
+	// Multiply axis values with correct ratios
 	if( zeroedInput.x > 0 )
 	{
 		currentX = zeroedInput.x * ratiosX.x;
@@ -367,6 +379,12 @@ private function CalculateNewValues()
 		currentZ = zeroedInput.z * ratiosZ.y;
 	}
 
+	// Invert the inverted axes.
+	currentX = invertedX? -currentX : currentX;
+	currentY = invertedY? -currentY : currentY;
+	currentZ = invertedZ? -currentZ : currentZ;
+
+	// Collect the values to a vector and clamp them
 	var vals = Vector3( currentX, currentY, currentZ );
 	if( ClampingFunction )
 	{
