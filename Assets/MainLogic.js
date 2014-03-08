@@ -44,7 +44,10 @@ function Start()
 	    Application.platform == RuntimePlatform.WindowsEditor )
 	{
 		inp.inputFromGamepad = true;
-	};
+	}
+
+	Input.gyro.enabled = true;
+	Input.gyro.updateInterval = 0.01;
 }
 
 

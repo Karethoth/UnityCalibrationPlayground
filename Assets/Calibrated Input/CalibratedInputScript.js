@@ -149,9 +149,10 @@ static var invertedZ:boolean = false;
 
 function Start()
 {
+	// Get the calibration scheme that has been attached.
 	calibrationScheme = GetComponent( Scheme ).calibrationScheme;
-	// We'll turn the calibrating flag on because
-	// we don't have anything set up.
+
+	// We'll turn the calibrating flag on because we don't have anything set up.
 	//   (In reality we do, but this is just a little precaution.)
 	calibrating = true;
 
@@ -167,17 +168,27 @@ function Start()
 
 function Update()
 {
+	// Are we are using the real sensor data, instead of faked input?
 	if( !inputFromGamepad )
 	{
-		// Read the gyro+acceleration info for this update.
-		sensorInput = Input.acceleration;
+		// If gyro is enabled, we'll use it to to get rid of the acceleration data.
+		if( Input.gyro.enabled )
+		{
+			sensorInput = Input.acceleration - Input.gyro.userAcceleration;
+		}
+		else
+		{
+			sensorInput = Input.acceleration;
+		}
 	}
 	else
 	{
 		sensorInput = FakeInputFromGamepad();
 	}
 
-	_rawInput   = sensorInput;
+	// Local copy of the input.
+	_rawInput = sensorInput;
+
 
 	// This is a hack to increase the physical ranges for X and Y.
 	// Should work just fine, except when the device is used upside-down
@@ -194,13 +205,14 @@ function Update()
 		sensorInput.y = direction.y * distance;
 	}
 
+	// If we are calibrating, we'll run a step and increment the counter.
 	if( IsCalibrating() )
 	{
 		calibrationScheme.Step( sensorInput, zeroVector );
 		++calibrationSampleCount;
 	}
 
-	// Update
+	// Update the values
 	CalculateNewValues();
 }
 
