@@ -46,8 +46,12 @@ function Start()
 		inp.inputFromGamepad = true;
 	}
 
-	Input.gyro.enabled = true;
-	Input.gyro.updateInterval = 0.01;
+	// If we have an usable gyroscope, use it
+	if( SystemInfo.supportsGyroscope )
+	{
+		Input.gyro.enabled = true;
+		Input.gyro.updateInterval = 0.01;
+	}
 }
 
 
