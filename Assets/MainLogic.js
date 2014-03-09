@@ -26,6 +26,14 @@ private var menuVisible:boolean = false;
 private var oldTouches:boolean = false; // Any touches during last update?
 private var oldTouchPosition:Vector2;
 
+private var menuPadding:float   = 10;
+private var buttonPadding:float = 5;
+private var buttonSize:Vector2  = Vector2( 130, 80 );
+private var menuRect:Rect = Rect( menuPadding,
+                                  menuPadding,
+                                  buttonPadding*2 + buttonSize.x,
+                                  buttonPadding*2 + buttonSize.y * 4 + buttonPadding * 4 );
+
 
 function Start()
 {
@@ -157,7 +165,7 @@ function Update()
 	}
 
 	// Hide the menu if user clicked something else than it.
-	else if( hasPoint && !Rect( 10, 10, 150, 290 ).Contains( point ) )
+	else if( hasPoint && !menuRect.Contains( point ) )
 	{
 		menuVisible = false;
 		oldTouches  = false;
@@ -178,21 +186,69 @@ function OnGUI()
 
 	if( !calibrating && menuVisible )
 	{
-		GUI.Box( Rect( 10, 10, 150, 290 ), "" );
+		GUI.Box( menuRect, "" );
+		var firstButtonPos:Vector2 = Vector2( menuRect.x + buttonPadding, menuRect.y + buttonPadding );
+
+		var zeroVectorButton = GUI.Button(
+			Rect( firstButtonPos.x,
+			      firstButtonPos.y,
+			      buttonSize.x,
+			      buttonSize.y ),
+			"Update Zero Vector",
+			buttonStyle
+		);
+
+		var calibrateButton = GUI.Button(
+			Rect( firstButtonPos.x,
+			      firstButtonPos.y + buttonSize.y * 1 + buttonPadding * 1,
+			      buttonSize.x,
+			      buttonSize.y ),
+			"Calibrate ratios",
+			buttonStyle
+		);
+
 
 		var rangeLabel = inp.rangeHack ? "Normal Range" : "Extend range";
+		var rangeHackButton = GUI.Button(
+			Rect( firstButtonPos.x,
+			      firstButtonPos.y + buttonSize.y * 2 + buttonPadding * 2,
+			      buttonSize.x,
+			      buttonSize.y ),
+			rangeLabel,
+			buttonStyle
+		);
 
-		if( GUI.Button( Rect( 20, 30, 130, 80 ), "Update Zero Vector", buttonStyle ) )
+		var resetButton = GUI.Button(
+			Rect( firstButtonPos.x,
+			      firstButtonPos.y + buttonSize.y * 3 + buttonPadding * 3,
+			      buttonSize.x,
+			      buttonSize.y ),
+			"Reset",
+			buttonStyle
+		);
+
+
+		if( zeroVectorButton )
 		{
 			inp.UpdateZeroVector();
 		}
-		else if( GUI.Button( Rect( 20, 120, 130, 80 ), "Calibrate ratios", buttonStyle ) )
+
+		if( calibrateButton )
 		{
 			calibrating = true;
 		}
-		else if( GUI.Button( Rect( 20, 210, 130, 80 ), rangeLabel, buttonStyle ) )
+
+		if( rangeHackButton )
 		{
 			inp.rangeHack = !inp.rangeHack;
+		}
+
+		if( resetButton )
+		{
+			inp.SetZeroVector( Vector3.zero );
+
+			var defaultRatios = RatioInformation();
+			inp.SetAxisRatios( defaultRatios );
 		}
 	}
 }
@@ -200,6 +256,7 @@ function OnGUI()
 
 function Clamper( vals:Vector3 )
 {
+	// Clamp axes to range -1.0 ... 1.0
 	if( vals.x > 1.0 )
 		vals.x = 1.0;
 	else if( vals.x < -1.0 )
