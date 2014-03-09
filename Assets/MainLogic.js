@@ -22,6 +22,10 @@ private var stickTwoStartPos:Vector3;
 private var sliderOneStartPos:Vector3;
 private var sliderTwoStartPos:Vector3;
 
+private var menuVisible:boolean = false;
+private var oldTouches:boolean = false; // Any touches during last update?
+private var oldTouchPosition:Vector2;
+
 
 function Start()
 {
@@ -52,6 +56,12 @@ function Start()
 		Input.gyro.enabled = true;
 		Input.gyro.updateInterval = 0.01;
 	}
+
+	// Set current orientation as the default one
+	inp.UpdateZeroVector();
+
+	// Set the infotext
+	infoTextMesh.text = "Press or click\nthe screen to\nshow the menu";
 }
 
 
@@ -112,6 +122,51 @@ function Update()
 	textMeshTwo.text = "X: "   + (rawVals.x * 0.5).ToString( "F2" ) +
 	                   "\nY: " + (rawVals.y * 0.5).ToString( "F2" ) +
 	                   "\nZ: " + (rawVals.z * 0.5).ToString( "F2" );
+
+	// Handle the logic of showing or hiding the menu
+	// Calculate the point where user has clicked, if he has.
+	var point:Vector2;
+	var hasPoint:boolean = true;
+
+	if( oldTouches && Input.touchCount == 0 )
+	{
+		point = oldTouchPosition;
+		point.y = Screen.height - point.y;
+	}
+	else if( Input.GetMouseButtonUp( 0 ) )
+	{
+		point = Vector2( Input.mousePosition.x, Input.mousePosition.y );
+		point.y = Screen.height - point.y;
+	}
+	else
+	{
+		hasPoint = false;
+	}
+
+	// Show the menu, if it's not visible and user has clicked something
+	if( !menuVisible && hasPoint )
+	{
+		menuVisible = true;
+		oldTouches  = false;
+
+		// Hacky
+		if( infoTextMesh.text == "Press or click\nthe screen to\nshow the menu" )
+		{
+			infoTextMesh.text = "";
+		}
+	}
+
+	// Hide the menu if user clicked something else than it.
+	else if( hasPoint && !Rect( 10, 10, 150, 290 ).Contains( point ) )
+	{
+		menuVisible = false;
+		oldTouches  = false;
+	}
+	else if( Input.touchCount > 0 )
+	{
+		oldTouches       = true;
+		oldTouchPosition = Input.GetTouch( 0 ).position;
+	}
 }
 
 
@@ -121,22 +176,21 @@ function OnGUI()
 	buttonStyle.fontSize = 20;
 	buttonStyle.wordWrap = true;
 
-	GUI.Box( Rect( 10, 10, 150, 290 ), "" );
-
-	if( !calibrating )
+	if( !calibrating && menuVisible )
 	{
+		GUI.Box( Rect( 10, 10, 150, 290 ), "" );
+
+		var rangeLabel = inp.rangeHack ? "Normal Range" : "Extend range";
+
 		if( GUI.Button( Rect( 20, 30, 130, 80 ), "Update Zero Vector", buttonStyle ) )
 		{
 			inp.UpdateZeroVector();
 		}
-
-		if( GUI.Button( Rect( 20, 120, 130, 80 ), "Calibrate ratios", buttonStyle ) )
+		else if( GUI.Button( Rect( 20, 120, 130, 80 ), "Calibrate ratios", buttonStyle ) )
 		{
 			calibrating = true;
 		}
-
-		var label = inp.rangeHack ? "Normal Range" : "Extend range";
-		if( GUI.Button( Rect( 20, 210, 130, 80 ), label, buttonStyle ) )
+		else if( GUI.Button( Rect( 20, 210, 130, 80 ), rangeLabel, buttonStyle ) )
 		{
 			inp.rangeHack = !inp.rangeHack;
 		}
