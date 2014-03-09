@@ -30,6 +30,7 @@
 	- GetCalibrationSampleCount()(int) - Returns the count of calibration samples.
 
 	- SetZeroVector(Vector3)()                  - Set the zero vector manually.
+	- SetAxisRatios(RatioInformation)()         - Set axis ratios for every axis.
 	- SetCalibrationScheme(CalibrationScheme)() - Set the calibration scheme.
 	- SetClampingDelegate(function(Vector3))()  - Set the clamping function. The function needs to return Vector3.
 
@@ -309,6 +310,14 @@ function GetCalibrationSampleCount()
 function SetZeroVector( newZeroVector:Vector3 )
 {
 	zeroVector = newZeroVector;
+}
+
+
+function SetAxisRatios( newRatios:RatioInformation )
+{
+	ratiosX = newRatios.x;
+	ratiosY = newRatios.y;
+	ratiosZ = newRatios.z;
 }
 
 
