@@ -32,7 +32,7 @@ private var buttonSize:Vector2  = Vector2( 130, 80 );
 private var menuRect:Rect = Rect( menuPadding,
                                   menuPadding,
                                   buttonPadding*2 + buttonSize.x,
-                                  buttonPadding*2 + buttonSize.y * 4 + buttonPadding * 4 );
+                                  buttonPadding*2 + buttonSize.y * 5 + buttonPadding * 5 );
 
 
 function Start()
@@ -228,6 +228,17 @@ function OnGUI()
 		);
 
 
+		var gyroLabel = Input.gyro.enabled ? "Turn gyro off" : "Turn gyro on";
+		var gyroButton = GUI.Button(
+			Rect( firstButtonPos.x,
+			      firstButtonPos.y + buttonSize.y * 4 + buttonPadding * 4,
+			      buttonSize.x,
+			      buttonSize.y ),
+			gyroLabel,
+			buttonStyle
+		);
+
+
 		if( zeroVectorButton )
 		{
 			inp.UpdateZeroVector();
@@ -249,6 +260,11 @@ function OnGUI()
 
 			var defaultRatios = RatioInformation();
 			inp.SetAxisRatios( defaultRatios );
+		}
+
+		if( gyroButton )
+		{
+			Input.gyro.enabled = !Input.gyro.enabled;
 		}
 	}
 }
