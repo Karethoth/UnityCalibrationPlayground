@@ -32,7 +32,6 @@
 	- SetZeroVector(Vector3)()                  - Set the zero vector manually.
 	- SetAxisRatios(RatioInformation)()         - Set axis ratios for every axis.
 	- SetCalibrationScheme(CalibrationScheme)() - Set the calibration scheme.
-	- SetClampingDelegate(function(Vector3))()  - Set the clamping function. The function needs to return Vector3.
 
 	- IsCalibrating()(boolean)      - Returns either true or false, depending on the current state.
 */
@@ -117,9 +116,6 @@ private var calibrating:boolean = false;
 
 // The calibration scheme we will be using.
 private var calibrationScheme:CalibrationScheme;
-
-// The clamping function we will be using.
-private var ClampingFunction:function( Vector3 ):Vector3;
 
 // Count of calibration samples we have
 private var calibrationSampleCount:int = 0;
@@ -326,11 +322,6 @@ function SetCalibrationScheme( newScheme:CalibrationScheme )
 	calibrationScheme = newScheme;
 }
 
-function SetClampingDelegate( clamper:function( Vector3 ):Vector3 )
-{
-	ClampingFunction = clamper;
-}
-
 
 function IsCalibrating()
 {
@@ -404,12 +395,8 @@ private function CalculateNewValues()
 	currentY = invertedY? -currentY : currentY;
 	currentZ = invertedZ? -currentZ : currentZ;
 
-	// Collect the values to a vector and clamp them
+	// Collect the values to a vector
 	var vals = Vector3( currentX, currentY, currentZ );
-	if( ClampingFunction )
-	{
-		vals = ClampingFunction( vals );
-	}
 
 	acceleration = vals;
 	_acceleration = vals;
