@@ -5,12 +5,12 @@
   ( functionName(input values)(return values) - description )
 
 	VARIABLES:
-    - acceleration:Vector3     - (Read Only) the current values that have been calibrated.
-    - rangeHack:boolean        - If set to true, will "double" the physical angles for orientation.
-    - inputFromGamepad:boolean - If set to true, input will be fetched from a controller instead of Input.acceleration.
-    - invertedX:boolean        - If set to true, the X-axis will be inverted
-    - invertedY:boolean        - If set to true, the Y-axis will be inverted
-    - invertedZ:boolean        - If set to true, the Z-axis will be inverted
+	- acceleration:Vector3     - (Read Only) the current values that have been calibrated.
+	- rangeHack:boolean        - If set to true, will "double" the physical angles for orientation.
+	- inputFromGamepad:boolean - If set to true, input will be fetched from a controller instead of Input.acceleration.
+	- invertedX:boolean        - If set to true, the X-axis will be inverted
+	- invertedY:boolean        - If set to true, the Y-axis will be inverted
+	- invertedZ:boolean        - If set to true, the Z-axis will be inverted
 
 
 	FUNCTIONS:
