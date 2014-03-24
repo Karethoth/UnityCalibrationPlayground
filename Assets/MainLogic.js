@@ -40,8 +40,6 @@ function Start()
 	Screen.sleepTimeout = SleepTimeout.NeverSleep;
 	inp = inputNode.GetComponent( CalibratedInputScript );
 
-	inp.SetClampingDelegate( Clamper );
-
 	textMeshOne = infoTextOne.GetComponent( TextMesh );
 	textMeshTwo = infoTextTwo.GetComponent( TextMesh );
 	infoTextMesh = infoTextBox.GetComponent( TextMesh );
@@ -87,7 +85,7 @@ function Update()
 	// that is the needed length to reach the side of a pad.
 	//  (This could also be accomplished by halving
 	//   the reference values (setting them to 0.5).
-	var vals:Vector3    = inp.acceleration  * 2.0;
+	var vals:Vector3    = Clamp( inp.acceleration )  * 2.0;
 	var rawVals:Vector3 = inp.GetRawInput() * 2.0;
 
 	// Move sticks to corresponding positions.
@@ -270,7 +268,7 @@ function OnGUI()
 }
 
 
-function Clamper( vals:Vector3 )
+function Clamp( vals:Vector3 )
 {
 	// Clamp axes to range -1.0 ... 1.0
 	if( vals.x > 1.0 )
