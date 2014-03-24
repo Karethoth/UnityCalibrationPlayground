@@ -34,6 +34,9 @@ private var menuRect:Rect = Rect( menuPadding,
                                   buttonPadding*2 + buttonSize.x,
                                   buttonPadding*2 + buttonSize.y * 5 + buttonPadding * 5 );
 
+private var inputBuffer:ArrayList = new ArrayList();
+private var inputSmoothing:int    = 7;
+
 
 function Start()
 {
@@ -85,8 +88,29 @@ function Update()
 	// that is the needed length to reach the side of a pad.
 	//  (This could also be accomplished by halving
 	//   the reference values (setting them to 0.5).
-	var vals:Vector3    = Clamp( inp.acceleration )  * 2.0;
+	var vals:Vector3    = inp.acceleration;
 	var rawVals:Vector3 = inp.GetRawInput() * 2.0;
+
+
+	// Handle input smoothing
+	if( !Input.gyro.enabled )
+	{
+		inputBuffer.Add( vals );
+		if( inputBuffer.Count > inputSmoothing )
+		{
+			inputBuffer.RemoveAt( 0 );
+		}
+
+		var total:Vector3 = Vector3( 0.0, 0.0, 0.0 );
+		for( var e : Vector3 in inputBuffer )
+		{
+			total += e;
+		}
+		vals = total / inputBuffer.Count;
+	}
+
+	vals = Clamp( vals ) * 2.0;
+
 
 	// Move sticks to corresponding positions.
 	stickOne.transform.position = stickOneStartPos + Vector3( vals.x, vals.y, 0.0 );
